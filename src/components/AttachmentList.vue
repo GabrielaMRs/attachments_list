@@ -1,39 +1,24 @@
 <template>
   <div class="attachments">
-    <div class="card-header header_attachments">
-      Arquivos
+    <div class="header_attachments">
+      Attachments
 
       <button class="search_attachments_button" @click="showFilters">
-        Pesquisar
+        Search
       </button>
     </div>
     <form class="attachments_filters_outter_div" v-if="isFilterVisible">
       <div class="attachments_filters">
         <div class="filters">
-          <input
-            type="date"
-            id="attachment_date_entered"
-            name="attachment_date_entered"
-            v-model="attachment_date_entered"
-          />
           <select
             id="attachments_tags"
             name="attachments_tags"
             v-model="attachments_tags"
           >
-            <option value="">Selecione uma tag</option>
+            <option value="">Select a tag</option>
             <option v-for="(tag, index) in tagsList" :key="index" :value="tag">
               {{ tag }}
             </option>
-          </select>
-          <select
-            id="attachments_type"
-            name="attachments_type"
-            v-model="attachments_type"
-          >
-            <option value="">Selecione um tipo</option>
-            <option value="attach">Arquivo</option>
-            <option value="sticker">Figurinha</option>
           </select>
           <input
             type="text"
@@ -47,12 +32,12 @@
             type="submit"
             @click.prevent="filterAttachments"
           >
-            Filtrar
+            Filter
           </button>
         </div>
 
         <button class="button_hide_filters" @click="hideFilters">
-          Esconder filtros
+          Hide filters
           <svg
             width="12"
             height="12"
@@ -144,13 +129,10 @@
           <tr class="header_attachments_results">
             <th></th>
             <th>
-              <a>ATTACHMENT NAME</a>
+              <a>NAME</a>
             </th>
             <th>
               <a>TAGS</a>
-            </th>
-            <th>
-              <a>DATE</a>
             </th>
             <th></th>
           </tr>
@@ -179,9 +161,6 @@
               >
                 {{ file.original_name }}
               </a>
-              <span class="badge badge-info">{{
-                getUpperMimeType(file.mime)
-              }}</span>
               <textarea
                 :data-attachment-id="file._id.$oid"
                 placeholder="Legenda:"
@@ -219,9 +198,6 @@
                   value=""
                 />
               </div>
-            </td>
-            <td class="text-nowrap align-middle">
-              {{ convertDate(file.created.$date) }}
             </td>
             <td class="align-middle">
               <button
@@ -292,9 +268,7 @@ export default {
       currentPage: 0,
       totalPages: 0,
       file: null,
-      attachment_date_entered: "",
       attachments_tags: "",
-      attachments_type: "",
       attachments_name: "",
       isFilterVisible: false,
       isMenuPaginationOpen: false,
@@ -334,11 +308,8 @@ export default {
           const attachmentsFromAPI = response.data.attachments;
           this.attachmentList = attachmentsFromAPI.filter((item) => {
             return (
-              (!this.attachment_date_entered ||
-                item.dateEntered === this.attachment_date_entered) &&
               (!this.attachments_tags ||
                 item.tags.includes(this.attachments_tags)) &&
-              (!this.attachments_type || item.type === this.attachments_type) &&
               (!this.attachments_name ||
                 item.name
                   .toLowerCase()
@@ -354,9 +325,7 @@ export default {
       axios
         .get(`http://localhost:3000/search`, {
           params: {
-            attachment_date_entered: this.attachment_date_entered,
             attachments_name: this.attachments_name,
-            attachments_type: this.attachments_type,
             attachments_tags: this.attachments_tags,
             page: page,
           },
@@ -380,12 +349,6 @@ export default {
     showFilters() {
       this.isFilterVisible = true;
     },
-    getUpperMimeType(mimeType) {
-      if (mimeType.includes("sticker=true")) {
-        return "Figurinha".toUpperCase();
-      }
-      return mimeType.split("/")[1].toUpperCase();
-    },
     async getAttachedDownloadLink(attach_id, filename) {
       try {
         const response = await axios.get(
@@ -395,7 +358,6 @@ export default {
           }
         );
 
-        // Cria um link para o arquivo
         const url = window.URL.createObjectURL(new Blob([response.data]));
         const link = document.createElement("a");
         link.href = url;
@@ -490,7 +452,7 @@ export default {
 
   &__tags {
     padding-inline: 5px;
-    background-color: #36b9cc;
+    background-color: #327390;
     border-radius: 3px;
     color: #fff;
     display: flex;
@@ -502,7 +464,7 @@ export default {
   &__close {
     width: 18px;
     height: 18px;
-    background-color: darken(#36b9cc, 10%);
+    background-color: darken(#327390, 10%);
     display: grid;
     place-items: center;
     border-radius: 100%;
@@ -510,7 +472,7 @@ export default {
     cursor: pointer;
 
     &:hover {
-      background-color: darken(#36b9cc, 30%);
+      background-color: darken(#327390, 30%);
     }
   }
 

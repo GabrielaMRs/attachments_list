@@ -2,6 +2,9 @@
 @use './list';
 @use './pagination';
 
+body{
+  background-color: #E8E8E8;
+}
 
 .header_attachments{
   display: flex;
@@ -10,15 +13,22 @@
   padding: 20px 30px;
   font-size: 24px;
   font-weight: 600;
+  background-color: #1E3F4F;
+  color: #FFFFFF;
 }
 
 .header_attachments .search_attachments_button{
-  background-color: #5076DC;
-  border-radius: 3px;
+  background-color: transparent;
+  border: 2px solid #327390;
   color: #FFFFFF;
-  border: none;
+  border-radius: 3px;
   outline: none;
   align-self: center;
   padding: 6px 15px;
-  font-size: 12px;
+  transition: all 1s;
+  font-size: 14px;
+  &:hover{
+    transition: all 1s;
+    background-color: #327390;
+  }
 }
