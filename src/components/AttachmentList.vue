@@ -1,352 +1,156 @@
-<script>
-import axios from "redaxios";
-
-export default {
-  data() {
-    return {
-      CanAttachmentSend: false,
-      CanAttachmentDescription: false,
-      CanAttachmentTags: false,
-      CanAttachmentDelete: false,
-      attachmentList: [],
-      tagsList: new Set([]),
-      totalResults: 0,
-      currentPage: 0,
-      totalPages: 0,
-      file: null,
-      attachment_date_entered: "",
-      attachments_tags: "",
-      attachments_type: "",
-      attachments_name: "",
-      isFilterVisible: false,
-      isMenuPaginationOpen: false
-    };
-  },
-  setup() {
-    function convertDate(date) {
-      return new Date(date).toLocaleString("pt-BR").replace(/,/g, " as");
-    }
-
-    return {
-      convertDate,
-    };
-  },
-  methods: {
-    /* getAuth() {
-      const url = window.location.origin;
-      // Token expirado. Puxa um novo no endpoint e joga passa no header da request atualizado.
-      axios
-        .get(`${url}/jwt/user-service-token`)
-        .then((response) => {
-          const USER_TOKEN = response.data;
-          const base64Url = USER_TOKEN.split(".")[1];
-          const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-          const jsonPayload = decodeURIComponent(
-            atob(base64)
-              .split("")
-              .map(function (c) {
-                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-              })
-              .join("")
-          );
-          const tokendata = JSON.parse(jsonPayload);
-          this.tokenFilter(tokendata);
-          axios.defaults.headers.common[
-            "Authorization"
-          ] = `Bearer ${USER_TOKEN}`;
-        })
-        .catch((error) => {
-          this.error = error;
-        });
-    }, */
-    fetchAttachments() {
-
-      axios
-        .get("http://localhost:3000/search")
-        .then((response) => {
-          this.attachmentList = response.data.attachments;
-          this.totalResults = response.data.total_results;
-          this.currentPage = response.data.current_page;
-          this.totalPages = response.data.total_pages;
-          for (let item of this.attachmentList) {
-            item.tags.length && item.tags.forEach((tag) => this.tagsList.add(tag));
-          }
-        })
-        .catch((error) => {
-          this.error = error;
-        });
-    },
-    filterAttachments() {
-
-      axios
-        .get(
-          `http://localhost:3000/search?attachment_date_entered=${this.attachment_date_entered}&attachments_name=${this.attachments_name}&attachments_type=${this.attachments_type}&attachments_tags=${this.attachments_tags}`
-        )
-        .then((response) => {
-          this.attachmentList = response.data.attachments;
-          this.totalResults = response.data.total_results;
-          this.currentPage = response.data.current_page;
-          this.totalPages = response.data.total_pages;
-        })
-        .catch((error) => {
-          this.error = error;
-        });
-    },
-    /* loadPage(page) {
-      const url = window.location.origin;
-      
-      axios
-      .get(`http://localhost:3000/search`, {
-        params: {
-          attachment_date_entered: this.attachment_date_entered,
-          attachments_name: this.attachments_name,
-          attachments_type: this.attachments_type,
-          attachments_tags: this.attachments_tags,
-          page: page
-        }
-      })
-      .then((response) => {
-        this.attachmentList = response.data.attachments;
-        this.messagesCount = response.data.total_results;
-        this.currentPage = response.data.current_page;
-        this.totalPages = response.data.total_pages;
-      })
-      .catch((error) => {
-        this.error = error;
-      });
-    }, */
-    toggleDropdown() {
-      this.dropdownOpen = !this.dropdownOpen;
-    },
-    hideFilters(){
-      this.isFilterVisible = false;
-    },
-    showFilters() {
-      this.isFilterVisible = true;
-    },
-    getUpperMimeType(mimeType) {
-      if (mimeType.includes('sticker=true')) {
-        return 'Figurinha'.toUpperCase()
-      }
-      return mimeType.split('/')[1].toUpperCase();
-    },
-    async getAttachedDownloadLink(attach_id, filename) {
-      try {
-        const response = await axios.get(`/attachments/attach/download/${attach_id}`, {
-          responseType: 'blob' 
-        });
-
-        // Cria um link para o arquivo
-        const url = window.URL.createObjectURL(new Blob([response.data]));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', filename);
-        link.setAttribute('target', '_blank');
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-      } catch (error) {
-        console.error('Erro ao obter o link de download:', error);
-      }
-    },
-   
-    deleteTag(id, name) {
-      for (let item of this.attachmentList) {
-        if (item._id.$oid === id) {
-          const newTags = item.tags.filter((tag) => tag !== name);
-          item.tags = newTags;
-          break;
-        }
-      }
-    },
-    addTags(id, e) {
-      if (!e.target.value) return;
-
-      this.tagsList.add(e.target.value)
-
-      for (let item of this.attachmentList) {
-        if (item._id.$oid === id) {
-          item.tags.push(e.target.value);
-          e.target.value = "";
-          break;
-        }
-      }
-
-    },
-    requestTag(id) {
-      const formData = new FormData();
-
-      for (let item of this.attachmentList) {
-        let arrayTags = [];
-
-        if (item._id.$oid === id) {
-          item.tags.forEach((tag) => {
-            arrayTags.push(tag);
-          });
-
-          formData.append("tags", arrayTags.join(","));
-          break;
-        }
-      }
-
-      const params = new URLSearchParams(formData).toString();
-      
-      fetch(`${window.location.origin}/attachments/${id}/edit_tags`, {
-        method: "POST",
-        body: params,
-        headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      })
-        .catch((error) => {
-          console.error("Error:", error);
-        });
-    },
-    toggleMenuPagination(){
-      this.isMenuPaginationOpen= !this.isMenuPaginationOpen;
-    }
-  },
-  created() {
-    this.fetchAttachments();
-  },
-};
-</script>
-
 <template>
-  <div class="card mb-5 shadow">
-    <div class="card-header text-primary dash_title header_attachments">
-      Seus Arquivos
+  <div class="attachments">
+    <div class="card-header header_attachments">
+      Arquivos
 
       <button class="search_attachments_button" @click="showFilters">
         Pesquisar
       </button>
     </div>
-    <div class="card-body p-0">
-      <form class="attachments_filters_outter_div" v-if="isFilterVisible">
-        <div class="attachments_filters">
-          <div class="filters">
-            <input
-              type="date"
-              id="attachment_date_entered"
-              name="attachment_date_entered"
-              v-model="attachment_date_entered"
-            />
-            <select
-              id="attachments_tags"
-              name="attachments_tags"
-              v-model="attachments_tags"
-            >
-              <option value="">Selecione uma tag</option>
-              <option v-for="(tag, index) in tagsList" :key="index" :value="tag">
-                {{ tag }}
-              </option>
-            </select>
-            <select
-              id="attachments_type"
-              name="attachments_type"
-              v-model="attachments_type"
-            >
-              <option value="">Selecione um tipo</option>
-              <option value="attach">Arquivo</option>
-              <option value="sticker">Figurinha</option>
-            </select>
-            <input
-              type="text"
-              id="attachments_name"
-              name="attachments_name"
-              v-model="attachments_name"
-              placeholder="Nome:"
-            />
-            <button
-              class="filter_button"
-              type="submit"
-              @click.prevent="filterAttachments"
-            >
-              Filtrar
-            </button>
-          </div>
+    <form class="attachments_filters_outter_div" v-if="isFilterVisible">
+      <div class="attachments_filters">
+        <div class="filters">
+          <input
+            type="date"
+            id="attachment_date_entered"
+            name="attachment_date_entered"
+            v-model="attachment_date_entered"
+          />
+          <select
+            id="attachments_tags"
+            name="attachments_tags"
+            v-model="attachments_tags"
+          >
+            <option value="">Selecione uma tag</option>
+            <option v-for="(tag, index) in tagsList" :key="index" :value="tag">
+              {{ tag }}
+            </option>
+          </select>
+          <select
+            id="attachments_type"
+            name="attachments_type"
+            v-model="attachments_type"
+          >
+            <option value="">Selecione um tipo</option>
+            <option value="attach">Arquivo</option>
+            <option value="sticker">Figurinha</option>
+          </select>
+          <input
+            type="text"
+            id="attachments_name"
+            name="attachments_name"
+            v-model="attachments_name"
+            placeholder="Nome:"
+          />
+          <button
+            class="filter_button"
+            type="submit"
+            @click.prevent="filterAttachments"
+          >
+            Filtrar
+          </button>
+        </div>
 
-          <button class="button_hide_filters" @click="hideFilters">
-            Esconder filtros
+        <button class="button_hide_filters" @click="hideFilters">
+          Esconder filtros
+          <svg
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 4.5L6 7.5L9 4.5"
+              stroke="#333333"
+              stroke-width="0.8"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+      </div>
+    </form>
+
+    <div class="show_results_attachments">
+      <div class="pagination_attachments">
+        Page
+
+        <div class="box_pagination">
+          <button class="button_mais_pags" @click="toggleMenuPagination">
+            {{ currentPage }}
             <svg
-              width="12"
-              height="12"
-              viewBox="0 0 12 12"
+              width="11"
+              height="11"
+              viewBox="0 0 11 11"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M3 4.5L6 7.5L9 4.5"
+                d="M3.23242 4.36719L5.49909 6.63385L7.76576 4.36719"
                 stroke="#333333"
-                stroke-width="0.8"
+                stroke-opacity="0.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
             </svg>
           </button>
-        </div>
-      </form>
-
-      <div class="show_results_attachments">
-        <span>
-          Exibindo 
-          <span v-if="totalPages === 1">{{ totalResults }}</span>
-          <span v-else-if="currentPage === totalPages">{{ totalResults - ((totalPages - 1) * 50) }}</span>
-          <span v-else>50</span> de {{ totalResults }} resultados.
-        </span>
-        <div class="pagination_attachments">
-          Página
-
-          <div class="box_pagination">
-            <button class="button_mais_pags" @click="toggleMenuPagination">
-              {{ currentPage }} 
-              <svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3.23242 4.36719L5.49909 6.63385L7.76576 4.36719" stroke="#333333" stroke-opacity="0.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </button>
-            <ul class="menu_pagination" v-show="isMenuPaginationOpen">
-              <template v-for="page in totalPages" :key="page">
-                <li :class="{'active': currentPage === page}" v-if="(page >= currentPage && page <= currentPage + pageSpacer) || (page <= currentPage && page >= currentPage - pageSpacer)">
+          <ul class="menu_pagination" v-show="isMenuPaginationOpen">
+            <template v-for="page in totalPages" :key="page">
+              <li
+                :class="{ active: currentPage === page }"
+                v-if="
+                  (page >= currentPage && page <= currentPage + pageSpacer) ||
+                  (page <= currentPage && page >= currentPage - pageSpacer)
+                "
+              >
                 <a class="page-link" @click="loadPage(page)">{{ page }}</a>
-                </li>
-                <li v-else-if="page === 1 || page === totalPages" class="page-item">
-                  <a class="page-link" @click="loadPage(page)">
-                    {{ page }}
-                  </a>
-                </li>
-                <li v-else>
-                  <span class="page-link" href="#">...</span>
-                </li>
-              </template>
-            </ul>
-          </div>
-          <button class="botao-voltar" @click="loadPage(currentPage - 1)" :disabled="currentPage === 1">
-            <i class="uil uil-arrow-left"></i>
-          </button>
-
-          <button class="botao-avancar" @click="loadPage(currentPage + 1)" :disabled="currentPage === totalPages">
-            <i class="uil uil-arrow-right"></i>
-          </button>
-          
+              </li>
+              <li
+                v-else-if="page === 1 || page === totalPages"
+                class="page-item"
+              >
+                <a class="page-link" @click="loadPage(page)">
+                  {{ page }}
+                </a>
+              </li>
+              <li v-else>
+                <span class="page-link" href="#">...</span>
+              </li>
+            </template>
+          </ul>
         </div>
-      </div>
-      
+        <button
+          class="previous-page"
+          @click="loadPage(currentPage - 1)"
+          :disabled="currentPage === 1"
+        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8899a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs"><path d="M15 18l-6-6 6-6"></path></svg>
+        </button>
 
+        <button
+          class="next-page"
+          @click="loadPage(currentPage + 1)"
+          :disabled="currentPage === totalPages"
+        >
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8899a4" stroke-width="2" stroke-linecap="round" stroke-linejoin="arcs"><path d="M9 18l6-6-6-6"></path></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="table-results">
       <table class="table">
         <thead>
           <tr class="header_attachments_results">
             <th></th>
             <th>
-              <a href="/attachments/1/name">NOME DO ARQUIVO</a>
+              <a>ATTACHMENT NAME</a>
             </th>
             <th>
-              <a href="/attachments/1/tags">TAGS</a>
+              <a>TAGS</a>
             </th>
             <th>
-              <a href="/attachments/1/created">CADASTRO</a>
+              <a>DATE</a>
             </th>
             <th></th>
           </tr>
@@ -360,7 +164,7 @@ export default {
                 class="lightbox-modal"
               >
                 <img
-                  :src="file.thumbnail"
+                  :src="file.path_relative"
                   alt=""
                   height="60"
                   width="60"
@@ -369,23 +173,22 @@ export default {
               </a>
             </td>
             <td class="text-nowrap align-middle">
-              <a style="cursor: pointer">
+              <a
+                style="cursor: pointer"
+                @click="getAttachedDownloadLink(file._id.$oid, file.name)"
+              >
                 {{ file.original_name }}
               </a>
-              <span class="badge badge-info">{{ getUpperMimeType(file.mime) }}</span>
+              <span class="badge badge-info">{{
+                getUpperMimeType(file.mime)
+              }}</span>
               <textarea
-                v-if="CanAttachmentDescription"
                 :data-attachment-id="file._id.$oid"
                 placeholder="Legenda:"
                 v-model="file.description"
                 rows="1"
                 name=""
                 class="attachment_edit form-control-sm form-control"
-              ></textarea>
-              <textarea
-                v-else
-                class="attachment_edit form-control-sm form-control"
-                readonly
               ></textarea>
             </td>
             <td class="align-middle">
@@ -420,7 +223,7 @@ export default {
             <td class="text-nowrap align-middle">
               {{ convertDate(file.created.$date) }}
             </td>
-            <td v-if="CanAttachmentDelete" class="align-middle">
+            <td class="align-middle">
               <button
                 class="attachment_delete"
                 :data-attachment-id="file._id.$oid"
@@ -477,6 +280,198 @@ export default {
   </div>
 </template>
 
+<script>
+import axios from "redaxios";
+
+export default {
+  data() {
+    return {
+      attachmentList: [],
+      tagsList: new Set([]),
+      totalResults: 0,
+      currentPage: 0,
+      totalPages: 0,
+      file: null,
+      attachment_date_entered: "",
+      attachments_tags: "",
+      attachments_type: "",
+      attachments_name: "",
+      isFilterVisible: false,
+      isMenuPaginationOpen: false,
+    };
+  },
+  setup() {
+    function convertDate(date) {
+      return new Date(date).toLocaleString("pt-BR").replace(/,/g, " as");
+    }
+
+    return {
+      convertDate,
+    };
+  },
+  methods: {
+    fetchAttachments() {
+      axios
+        .get("http://localhost:3000/search")
+        .then((response) => {
+          this.attachmentList = response.data.attachments;
+          this.totalResults = response.data.total_results;
+          this.currentPage = response.data.current_page;
+          this.totalPages = response.data.total_pages;
+          for (let item of this.attachmentList) {
+            item.tags.length &&
+              item.tags.forEach((tag) => this.tagsList.add(tag));
+          }
+        })
+        .catch((error) => {
+          this.error = error;
+        });
+    },
+    filterAttachments() {
+      axios
+        .get("http://localhost:3000/search")
+        .then((response) => {
+          const attachmentsFromAPI = response.data.attachments;
+          this.attachmentList = attachmentsFromAPI.filter((item) => {
+            return (
+              (!this.attachment_date_entered ||
+                item.dateEntered === this.attachment_date_entered) &&
+              (!this.attachments_tags ||
+                item.tags.includes(this.attachments_tags)) &&
+              (!this.attachments_type || item.type === this.attachments_type) &&
+              (!this.attachments_name ||
+                item.name
+                  .toLowerCase()
+                  .includes(this.attachments_name.toLowerCase()))
+            );
+          });
+        })
+        .catch((error) => {
+          console.error("Ocorreu um erro:", error);
+        });
+    },
+    loadPage(page) {
+      axios
+        .get(`http://localhost:3000/search`, {
+          params: {
+            attachment_date_entered: this.attachment_date_entered,
+            attachments_name: this.attachments_name,
+            attachments_type: this.attachments_type,
+            attachments_tags: this.attachments_tags,
+            page: page,
+          },
+        })
+        .then((response) => {
+          this.attachmentList = response.data.attachments;
+          this.messagesCount = response.data.total_results;
+          this.currentPage = response.data.current_page;
+          this.totalPages = response.data.total_pages;
+        })
+        .catch((error) => {
+          this.error = error;
+        });
+    },
+    toggleDropdown() {
+      this.dropdownOpen = !this.dropdownOpen;
+    },
+    hideFilters() {
+      this.isFilterVisible = false;
+    },
+    showFilters() {
+      this.isFilterVisible = true;
+    },
+    getUpperMimeType(mimeType) {
+      if (mimeType.includes("sticker=true")) {
+        return "Figurinha".toUpperCase();
+      }
+      return mimeType.split("/")[1].toUpperCase();
+    },
+    async getAttachedDownloadLink(attach_id, filename) {
+      try {
+        const response = await axios.get(
+          `/attachments/attach/download/${attach_id}`,
+          {
+            responseType: "blob",
+          }
+        );
+
+        // Cria um link para o arquivo
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", filename);
+        link.setAttribute("target", "_blank");
+        link.style.display = "none";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error("Erro ao obter o link de download:", error);
+      }
+    },
+
+    deleteTag(id, name) {
+      for (let item of this.attachmentList) {
+        if (item._id.$oid === id) {
+          const newTags = item.tags.filter((tag) => tag !== name);
+          item.tags = newTags;
+          break;
+        }
+      }
+    },
+    addTags(id, e) {
+      if (!e.target.value) return;
+
+      this.tagsList.add(e.target.value);
+
+      for (let item of this.attachmentList) {
+        if (item._id.$oid === id) {
+          item.tags.push(e.target.value);
+          e.target.value = "";
+          break;
+        }
+      }
+    },
+    requestTag(id) {
+      const formData = new FormData();
+
+      for (let item of this.attachmentList) {
+        let arrayTags = [];
+
+        if (item._id.$oid === id) {
+          item.tags.forEach((tag) => {
+            arrayTags.push(tag);
+          });
+
+          formData.append("tags", arrayTags.join(","));
+          break;
+        }
+      }
+
+      const params = new URLSearchParams(formData).toString();
+
+      fetch(`/attachments/${id}/edit_tags`, {
+        method: "POST",
+        body: params,
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }).catch((error) => {
+        console.error("Error:", error);
+      });
+    },
+    toggleMenuPagination() {
+      this.isMenuPaginationOpen = !this.isMenuPaginationOpen;
+    },
+  },
+  created() {
+    this.fetchAttachments();
+  },
+};
+</script>
+
 <style lang="scss">
 .tag {
   &__wrapper {
@@ -500,7 +495,6 @@ export default {
     padding-inline: 5px;
     background-color: #36b9cc;
     border-radius: 3px;
-    font-size: 75%;
     color: #fff;
     display: flex;
     gap: 10px;
@@ -533,7 +527,7 @@ export default {
     &::placeholder {
       font-size: 15px;
     }
-    &:focus-visible{
+    &:focus-visible {
       outline: none;
     }
   }
