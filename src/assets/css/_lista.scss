@@ -1,0 +1,41 @@
+.header_attachments_results{
+  background-color: #E7F3EF;
+  th{
+    border: none;
+    a{
+      color: #333333;
+      font-weight: 700;
+    }
+  }
+  td{
+    border: none;
+  }
+}
+
+.content_attachments{
+  background-color: #F8F9FA;
+  .attachment_edit{
+    max-width: 500px;
+    width: 100%;
+  }
+  .attachment_delete{
+    padding: 5px;
+    background-color: #D65745;
+    border: 1px solid #D65745;
+    border-radius: 2px;
+    outline: none;
+    width: 30px;
+    margin: 0 auto;
+  }
+  .attachment_delete svg {
+    margin: 0;
+  }
+  .edit_attachment_tags{
+    border: 1px solid #DFE1E5;
+    max-width: 275px;
+    width: 100%;
+    &:focus-visible{
+      outline: none;
+    }
+  }
+}

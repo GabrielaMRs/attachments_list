@@ -1,0 +1,63 @@
+.dark-theme {
+  .pagination_attachments{
+    background-color: #2e2e2e;
+    color: #ffffff;
+    .button_mais_pags{
+      background-color: #666666;
+      color: #ffffff;
+      svg path{
+        stroke: #ffffff;
+      }
+    }
+    .menu_pagination{
+      background-color: #666666;
+      border: none;
+      .page-item .page-link{
+        color: #ffffff;
+        &:hover{
+          background: #cccccc;
+        }
+      }
+    }
+    .botao_avancar, .botao_voltar{
+      background-color: #666666;
+      .uil{
+        color: #ffffff;
+      }
+      &:disabled{
+        background-color: #cccccc;
+      }
+    }
+  }
+  
+  .header_attachments_results a{
+    color: #ffffff;
+  }
+
+  .tag{
+    &__input{
+      color: #ffffff;
+    }
+    &__wrapper{
+      border-color: #666666;
+    }
+  }
+
+  .attachments_filters{
+    .filters{
+      #attachments_name, #attachments_tags, #attachment_date_entered, #attachments_type{
+        background-color: #666666;
+        color: #ffffff;
+        border-color: #666666;
+      }
+    }
+    .button_hide_filters{
+      background-color: #666666;
+      color: #ffffff;
+      border-color: #666666;
+      svg path{
+        stroke: #ffffff;
+      }
+    }
+  }
+}

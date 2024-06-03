@@ -1,0 +1,22 @@
+@use './filters';
+@use './lista';
+@use './pagination';
+@use './dark-theme';
+
+
+.header_attachments{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header_attachments .search_attachments_button{
+  background-color: #5076DC;
+  border-radius: 3px;
+  color: #FFFFFF;
+  border: none;
+  outline: none;
+  align-self: center;
+  padding: 6px 15px;
+  font-size: 12px;
+}

@@ -1,0 +1,66 @@
+.attachments_filters_outter_div{
+  .attachments_filters{
+    display: flex;
+    padding: 12px 18px;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(0,0,0,.125);
+    .filters{
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      #attachment_date_entered{
+        width: 200px;
+        height: 30px;
+        border-radius: 7px;
+        background: #FFFFFF;
+        border: 1px solid #DFE1E5;
+        padding: 0 8px;
+      }
+      #attachments_tags{
+        width: 163px;
+        height: 30px;
+        background: #FFFFFF;
+        border: 1px solid #DFE1E5;
+        border-radius: 7px;
+        padding: 0 8px;
+      }
+      #attachments_type{
+        width: 112px;
+        height: 30px;
+        border-radius: 7px;
+        background: #FFFFFF;
+        border: 1px solid #DFE1E5;
+        padding: 0 8px;
+      }
+      #attachments_name{
+        width: 382px;
+        height: 30px;
+        border-radius: 7px;
+        background: #FFFFFF;
+        border: 1px solid #DFE1E5;
+        padding: 0 8px;
+      }
+      .filter_button{
+        background-color: #5076DC;
+        border-radius: 3px;
+        color: #FFFFFF;
+        border: none;
+        outline: none;
+        padding: 4px 10px;
+        font-size: 12px;
+      }
+      input:focus-visible, select:focus-visible{
+        outline: none;
+      }
+    }
+    .button_hide_filters{
+      padding: 8px;
+      color: #333333;
+      border: 1px solid #CED4DA;
+      background-color: #FFFFFF;
+      font-size: 12px;
+      border-radius: 3px;
+      outline: none;
+    }
+  }
+}
