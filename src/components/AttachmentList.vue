@@ -77,7 +77,7 @@
         Page
 
         <div class="box_pagination">
-          <button class="button_mais_pags" @click="toggleMenuPagination">
+          <button class="button-more-page" @click="toggleMenuPagination">
             {{ currentPage }}
             <svg
               width="11"
@@ -204,7 +204,7 @@
                     @click="
                       deleteTag(file._id.$oid, tag), requestTag(file._id.$oid)
                     "
-                    >X</span
+                    >x</span
                   >
                 </span>
                 <input
@@ -475,14 +475,12 @@ export default {
 <style lang="scss">
 .tag {
   &__wrapper {
-    border: 1px solid #ccc;
-    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     display: flex;
     flex-direction: row;
     gap: 5px;
     padding: 5px;
     border-radius: 3px;
-    max-width: 275px;
+    max-width: 500px;
     width: 100%;
     font-size: 12px;
     flex-wrap: wrap;
@@ -491,7 +489,6 @@ export default {
   }
 
   &__tags {
-    border: 1px solid #01649e;
     padding-inline: 5px;
     background-color: #36b9cc;
     border-radius: 3px;
